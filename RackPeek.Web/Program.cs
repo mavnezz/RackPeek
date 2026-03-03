@@ -30,6 +30,7 @@ public class Program
             : Path.Combine(basePath, yamlDir);
 
         Directory.CreateDirectory(yamlPath);
+        builder.Services.AddSingleton(new ConfigDirectoryProvider(yamlPath));
 
         var yamlFilePath = Path.Combine(yamlPath, yamlFileName);
 

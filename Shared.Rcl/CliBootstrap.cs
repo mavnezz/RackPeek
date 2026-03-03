@@ -43,6 +43,7 @@ using Shared.Rcl.Commands.Switches.Labels;
 using Shared.Rcl.Commands.Switches.Ports;
 using Shared.Rcl.Commands.Systems;
 using Shared.Rcl.Commands.Systems.Labels;
+using Shared.Rcl.Commands.Git;
 using Shared.Rcl.Commands.Ups;
 using Shared.Rcl.Commands.Ups.Labels;
 using Spectre.Console;
@@ -77,6 +78,7 @@ public static class CliBootstrap
             : Path.Combine(appBasePath, yamlDir);
         
         Directory.CreateDirectory(resolvedYamlDir);
+        services.AddSingleton(new ConfigDirectoryProvider(resolvedYamlDir));
 
         var fullYamlPath = Path.Combine(resolvedYamlDir, yamlFile);
 
@@ -596,7 +598,54 @@ public static class CliBootstrap
                 ansible.AddCommand<GenerateAnsibleInventoryCommand>("inventory")
                     .WithDescription("Generate an Ansible inventory.");
             });
-            
+
+            // ----------------------------
+            // Git version control
+            // ----------------------------
+            config.AddBranch("git", git =>
+            {
+                git.SetDescription("Version-control the config directory with Git.");
+
+                git.AddCommand<GitInitCommand>("init")
+                    .WithDescription("Initialize a git repository in the config directory.");
+
+                git.AddCommand<GitStatusCommand>("status")
+                    .WithDescription("Show the git status of the config directory.");
+
+                git.AddCommand<GitLogCommand>("log")
+                    .WithDescription("Show recent commit history.");
+
+                git.AddCommand<GitCommitCommand>("commit")
+                    .WithDescription("Stage and commit all changes in the config directory.");
+
+                git.AddCommand<GitPushCommand>("push")
+                    .WithDescription("Push commits to the remote repository.");
+
+                git.AddCommand<GitPullCommand>("pull")
+                    .WithDescription("Pull changes from the remote repository.");
+
+                git.AddCommand<GitRemoteCommand>("remote")
+                    .WithDescription("Add or update the remote origin URL.");
+
+                git.AddCommand<GitRestoreCommand>("restore")
+                    .WithDescription("Discard working tree changes.");
+
+                git.AddCommand<GitDiffCommand>("diff")
+                    .WithDescription("Show changes in the working tree or staging area.");
+
+                git.AddCommand<GitBranchCommand>("branch")
+                    .WithDescription("List, create, or delete branches.");
+
+                git.AddCommand<GitCheckoutCommand>("checkout")
+                    .WithDescription("Switch branches.");
+
+                git.AddCommand<GitStashCommand>("stash")
+                    .WithDescription("Stash or restore uncommitted changes.");
+
+                git.AddCommand<GitResetCommand>("reset")
+                    .WithDescription("Reset current HEAD to a specified state.");
+            });
+
         });
     }
 
