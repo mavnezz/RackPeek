@@ -36,10 +36,12 @@ public class UpsertInventoryUseCase(
         
         
         YamlRoot incomingRoot;
+        string yamlInput;
 
         if (!string.IsNullOrWhiteSpace(request.Yaml))
         {
-            incomingRoot = await migrationService.DeserializeAsync(request.Yaml!)
+            yamlInput = request.Yaml!;
+            incomingRoot = await migrationService.DeserializeAsync(yamlInput)
                            ?? throw new ValidationException("Invalid YAML structure.");
         }
         else
@@ -52,6 +54,17 @@ public class UpsertInventoryUseCase(
                                rawJson,
                                JsonOptions)
                            ?? throw new ValidationException("Invalid JSON structure.");
+            // Generate YAML only for persistence layer
+            var yamlSerializer = new SerializerBuilder()
+                .WithNamingConvention(CamelCaseNamingConvention.Instance)
+                .WithTypeConverter(new StorageSizeYamlConverter())
+                .WithTypeConverter(new NotesStringYamlConverter())
+                .ConfigureDefaultValuesHandling(
+                    DefaultValuesHandling.OmitNull |
+                    DefaultValuesHandling.OmitEmptyCollections)
+                .Build();
+
+            yamlInput = yamlSerializer.Serialize(incomingRoot);
         }
 
         if (incomingRoot.Resources == null)
@@ -127,7 +140,7 @@ public class UpsertInventoryUseCase(
 
         if (!request.DryRun)
         {
-            await repo.Merge(incomingRoot.Resources!, request.Mode);
+            await repo.Merge(yamlInput, request.Mode);
         }
 
         return response;
