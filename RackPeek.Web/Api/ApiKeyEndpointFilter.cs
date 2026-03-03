@@ -13,7 +13,7 @@ public class ApiKeyEndpointFilter(IConfiguration configuration) : IEndpointFilte
         var expectedKey = configuration["RPK_API_KEY"];
 
         if (string.IsNullOrWhiteSpace(expectedKey))
-            return Results.StatusCode(503);
+            return Results.Json(new { error = "API key not configured on server" }, statusCode: 503);
 
         if (!context.HttpContext.Request.Headers.TryGetValue(_apiKeyHeaderName, out StringValues providedKey)
             || !SecureEquals(providedKey.ToString(), expectedKey))
