@@ -185,17 +185,14 @@ public sealed class YamlResourceCollection(
         return Task.FromResult<IReadOnlyList<Resource>>(result);
     }
 
-    public async Task Merge(string incomingYaml, MergeMode mode)
+    public async Task Merge(IReadOnlyList<Resource> incomingResources, MergeMode mode)
     {
-        if (string.IsNullOrWhiteSpace(incomingYaml))
+        if (incomingResources == null || incomingResources.Count == 0)
             return;
 
         await resourceCollection.FileLock.WaitAsync();
         try
         {
-            var incomingRoot = await migrationService.DeserializeAsync(incomingYaml);
-
-            var incomingResources = incomingRoot.Resources ?? new List<Resource>();
             var merged = ResourceCollectionMerger.Merge(
                 resourceCollection.Resources,
                 incomingResources,

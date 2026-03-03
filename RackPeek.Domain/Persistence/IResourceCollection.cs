@@ -35,7 +35,7 @@ public interface IResourceCollection
     Task<IReadOnlyList<T>> GetAllOfTypeAsync<T>();
     Task<IReadOnlyList<Resource>> GetDependantsAsync(string name);
 
-    Task Merge(string incomingYaml, MergeMode mode);
+    Task Merge(IReadOnlyList<Resource> incomingResources, MergeMode mode);
 
 
 }
